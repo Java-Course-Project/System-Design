@@ -32,16 +32,33 @@
     - The system support login by token (JWT)
     - The system save hased passwords
     - The system return both refresh token and access token for every login. Refresh token can be used to re-create an access token.
+    - Admin is just a user with high priority. No need to seperated between entities user and admin
 - Booking a Car:
     - Drivers update their position every 30 seconds
     - When a user books a drive, the system looks for nearest driver and assign that driver for user.
         -  If the distant of nearest driver and user > MAX_ALLOW_DISTANCE, cancel that transaction. Keep looking again
-        -  The distance between user and driver = distance(pos(user) - post(driver)) + driver_average_rate. It means that even a driver is nearer to a customer, the system can assign to a farer driver if that driver is rated low
+        -  The distance between user and driver = distance(pos(user) - post(driver)) + driver_average_rate. It means that even a driver 
+           is nearer to a customer, the system can assign to a farther driver if that driver is rated low
     - The system will support long polling for this api (up to 30 seconds)
-    - The system searches for matched driver up to 2 seconds. If timeout, the syste, searches again for one with higher priority
-    - Users booking request and matched drivers will be exchanged over Message Queue (Even service are monolithics). If the system is monolithics, the system could use an in-memory Message Queue (implemented by Queue) else the system use a distributed Message Queue (RabbitMQ)
-    - Notifications will be sent async (Message Queue). The system will use 3rd providers to send nofitications.
+    - The system searches for matched driver up to 2 seconds. If timeout, the system, searches again for one with higher priority
+    - Users booking request and matched drivers will be exchanged over Message Queue (Even service are monolithic). If the system is monolithic, the system could use an in-memory Message Queue (implemented by Queue) else the system use a distributed Message Queue (RabbitMQ)
+    - Notifications will be sent async (Message Queue). The system will use 3rd providers to send notifications.
 - Booking History and Status Tracking:
     - The system saved car history and allow user to view
-    - The system cached information about transaction in the last 1 years.
+    - The system cached information about transaction in the last 1 year.
     - The system indexing for searching
+
+## Components diagram
+![Diagram](images/component-diagrams.svg)
+
+- User: user can be either Driver/Customer
+- Load Balancer: system load balancer
+- Authentication & Authorization Service: Service do authentication and authorization
+- Customer Service: Service save and get information about Customer/Admin
+- Driver Service: Service save and get information about Driver
+- Ride Transaction Service: Service save and get information about every ride
+- Notification Service: Service call 3rd provider to send notification
+- Notification Provider: 3rd party that do the sending notifications
+- Message Queue: Message queue that do async requests
+- Database: RDMS database
+- Booking Service: Service that coordinating a ride (check user location, find matched driver location)
